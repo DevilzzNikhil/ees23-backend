@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "=*9%^j+b)f2pwq6^2lnxmjvfbq)ch3^e+fwsvfu_0%rc)()j_e"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # if not DEBUG:
 #     SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -160,7 +160,7 @@ EMAIL_PORT = 587
 BASE_URL_FRONTEND = os.environ.get("BASE_URL_FRONTEND")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 
-print(CLIENT_ID)
+# print(CLIENT_ID)
 # if DEBUG:
 #     STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 # else:
