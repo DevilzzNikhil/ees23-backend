@@ -120,7 +120,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-CLIENT_ID = "868476725043-56q2l17h7bf2a1fpvkqp04t5br7mti4p.apps.googleusercontent.com"
-CLIENT_SECRET = "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"
+CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
