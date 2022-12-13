@@ -6,14 +6,8 @@ exclude =
     *.py[co],
     __pycache__,
     venv,
-    .env,
-    .vscode,
-    */migrations/*
+    .env
 
 ignore =
-    F401,
-    E712,
-    E722,
-    W503
-
-max-line-length = 150
+    E501,
+    E302,

@@ -1,3 +1,0 @@
-# requirements.txt required for deployment on heroku
--r requirements/dev.txt
--r requirements/prod.txt
