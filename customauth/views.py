@@ -21,7 +21,6 @@ def google_validate(*, id_token: str, email:str) -> bool:
         params={'id_token': id_token}
     )
     # for i in response: print(i)
-    print((response.json())["email"])
 
     if not response.ok:
         raise ValidationError('Id token is invalid')
@@ -29,7 +28,7 @@ def google_validate(*, id_token: str, email:str) -> bool:
     audience = response.json()['aud']
     if audience != CLIENT_ID:
         raise ValidationError("Invalid Audience")
-
+        
     if (response.json())["email"]!=email:
         raise ValidationError('Email mismatch')
 
