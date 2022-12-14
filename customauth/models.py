@@ -9,10 +9,11 @@ def isValid(s):
 
 
 YEARS = (
-    ("ONE", "1st year"),
-    ("TWO", "2nd year"),
-    ("THREE", "3rd year"),
-    ("FOUR", "4th year"),
+    ("FIRST", "1st year"),
+    ("SECOND", "2nd year"),
+    ("THIRD", "3rd year"),
+    ("FORTH", "4th year"),
+    ("FIFTH", "5th year"),
 )
 
 class AccountManager(BaseUserManager):

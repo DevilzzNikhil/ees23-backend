@@ -120,7 +120,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-CLIENT_ID = os.environ.get("CLIENT_ID")
-CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

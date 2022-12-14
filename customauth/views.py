@@ -1,4 +1,4 @@
-from rest_framework import serializers, generics
+from rest_framework import serializers, generics, status
 # from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import UserAcount
@@ -20,7 +20,6 @@ def google_validate(*, id_token: str, email:str) -> bool:
         GOOGLE_ID_TOKEN_INFO_URL,
         params={'id_token': id_token}
     )
-    # for i in response: print(i)
 
     if not response.ok:
         raise ValidationError('Id token is invalid')
@@ -28,7 +27,7 @@ def google_validate(*, id_token: str, email:str) -> bool:
     audience = response.json()['aud']
     if audience != CLIENT_ID:
         raise ValidationError("Invalid Audience")
-        
+
     if (response.json())["email"]!=email:
         raise ValidationError('Email mismatch')
 
@@ -76,19 +75,28 @@ class UserInitApi(generics.GenericAPIView):
         phone_number = serializers.CharField(required=True)
 
     def post(self, request, *args, **kwargs):
+        print(request.data)
         id_token = request.headers.get('Authorization')
         email = request.data.get("email")
         google_validate(id_token=id_token,email=email)
 
+        print("Email verified")
         serializer = self.InputSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            error = {}
+            for err in serializer.errors:
+                error[err] = serializer.errors[err][0]
+            return Response(error, status=status.HTTP_409_CONFLICT)
 
         user, bool = user_get_or_create(**serializer.validated_data)
         # login(request=request,user=user)
         print("login sucess")
 
-        response = Response(data=user_get_me(user=user, bool=bool))
         if bool:
+            response = Response(data=user_get_me(user=user, bool=bool))
             return response
         else:
-            return response
+            return Response(
+                    {"error": "User with same credentials already exists!"},
+                    status=status.HTTP_226_IM_USED,
+                )
