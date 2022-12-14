@@ -12,14 +12,16 @@ import requests
 # from rest_framework.authtoken.models import Token
 
 
-GOOGLE_ID_TOKEN_INFO_URL = 'https://www.googleapis.com/oauth2/v3/tokeninfo'
+GOOGLE_ID_TOKEN_INFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 
-def google_validate(*, id_token: str) -> bool:
+def google_validate(*, id_token: str, email:str) -> bool:
 
     response = requests.get(
         GOOGLE_ID_TOKEN_INFO_URL,
         params={'id_token': id_token}
     )
+    # for i in response: print(i)
+    print((response.json())["email"])
 
     if not response.ok:
         raise ValidationError('Id token is invalid')
@@ -27,6 +29,9 @@ def google_validate(*, id_token: str) -> bool:
     audience = response.json()['aud']
     if audience != CLIENT_ID:
         raise ValidationError("Invalid Audience")
+
+    if (response.json())["email"]!=email:
+        raise ValidationError('Email mismatch')
 
     return True
 
@@ -73,14 +78,15 @@ class UserInitApi(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         id_token = request.headers.get('Authorization')
-        google_validate(id_token=id_token)
+        email = request.data.get("email")
+        google_validate(id_token=id_token,email=email)
 
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user, bool = user_get_or_create(**serializer.validated_data)
         # login(request=request,user=user)
-        print("loggin sucess")
+        print("login sucess")
 
         response = Response(data=user_get_me(user=user, bool=bool))
         if bool:
