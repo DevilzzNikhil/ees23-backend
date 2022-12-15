@@ -63,7 +63,7 @@ def user_get_me(*, user: UserAcount):
         'id': user.id,
         'name': user.name,
         'email': user.email,
-        'message': "You have registeration is complete",
+        'message': "Your registration was successful!",
     }
 
 class UserInitApi(generics.GenericAPIView):
