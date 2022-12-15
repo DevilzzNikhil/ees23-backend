@@ -58,12 +58,12 @@ def user_get_or_create(*, email: str, **extra_data) -> Tuple[UserAcount, bool]:
     # print(extra_data)
     return user_create(email=email, **extra_data), True
 
-def user_get_me(*, user: UserAcount, bool):
+def user_get_me(*, user: UserAcount):
     return {
         'id': user.id,
         'name': user.name,
         'email': user.email,
-        'message': "You have registered Suceesfully" if bool else "You have logged in successfully",
+        'message': "You have registeration is complete",
     }
 
 class UserInitApi(generics.GenericAPIView):
@@ -75,28 +75,20 @@ class UserInitApi(generics.GenericAPIView):
         phone_number = serializers.CharField(required=True)
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
+        # print(request.data)
         id_token = request.headers.get('Authorization')
         email = request.data.get("email")
         google_validate(id_token=id_token,email=email)
 
-        print("Email verified")
-        serializer = self.InputSerializer(data=request.data)
-        if not serializer.is_valid():
-            error = {}
-            for err in serializer.errors:
-                error[err] = serializer.errors[err][0]
-            return Response(error, status=status.HTTP_409_CONFLICT)
-
-        user, bool = user_get_or_create(**serializer.validated_data)
-        # login(request=request,user=user)
-        print("login sucess")
-
-        if bool:
-            response = Response(data=user_get_me(user=user, bool=bool))
-            return response
-        else:
-            return Response(
-                    {"error": "User with same credentials already exists!"},
-                    status=status.HTTP_226_IM_USED,
-                )
+        if UserAcount.objects.filter(email=email).count()==0:
+            serializer = self.InputSerializer(data=request.data)
+            if not serializer.is_valid():
+                error = {}
+                for err in serializer.errors:
+                    error[err] = serializer.errors[err][0]
+                return Response(error, status=status.HTTP_409_CONFLICT)
+            user, bool = user_get_or_create(**serializer.validated_data)
+        
+        response = Response(data=user_get_me(user=UserAcount.objects.get(email=email)))
+        return response
+            
