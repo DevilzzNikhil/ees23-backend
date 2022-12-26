@@ -14,6 +14,11 @@ from udyamBackend.settings import CLIENT_ID
 import requests
 from django.core.mail import send_mail,EmailMultiAlternatives
 from .models import BroadCast_Email
+from django.shortcuts import render
+from.models import BroadCast_Email
+from.forms import PostForm
+from django.http import HttpResponseRedirect
+
 # from models import UserAccount
 # from django.contrib.auth import login, logout
 # from rest_framework.authtoken.models import Token
@@ -42,7 +47,6 @@ def google_validate(*, id_token: str, email:str) -> bool:
 
 
 def user_create(email, **extra_field) -> UserAcount:
-    # print(extra_field)
     permission_classes = (permissions.IsAuthenticated,)
     extra_fields = {
         'is_staff': False,
@@ -58,7 +62,6 @@ def user_create(email, **extra_field) -> UserAcount:
 
 
 def user_get_or_create(*, email: str, **extra_data) -> Tuple[UserAcount, bool]:
-    permission_classes = (permissions.IsAuthenticated,)
     # print(email)
     user = UserAcount.objects.filter(email=email).first()
 
@@ -68,7 +71,6 @@ def user_get_or_create(*, email: str, **extra_data) -> Tuple[UserAcount, bool]:
     return user_create(email=email, **extra_data), True
 
 def user_get_me(*, user: UserAcount):
-    permission_classes = (permissions.IsAuthenticated,)
     return {
         'id': user.id,
         'name': user.name,
@@ -78,10 +80,9 @@ def user_get_me(*, user: UserAcount):
 
 # Custom
 def broadcast_mail(request,subject):
-    permission_classes = (permissions.IsAuthenticated,)
-    if request.user.is_authenticated is False or request.user.is_admin is False:
-        raise Http404
-    if request.method == "GET":
+
+
+    if request.method == "GET" and request.user.has_perm("view_broadcast_email"):
         message = BroadCast_Email.objects.get(subject=subject).message
         users = UserAcount.objects.all()
         list_email_user = [user.email for user in users]
@@ -127,6 +128,31 @@ def broadcast_mail(request,subject):
 #     search_fields = [
 #         "subject",
 #     ]
+
+def mailChailaija(request):
+    if request.method == "POST":
+        print("Hello")
+
+
+def index(request):
+    subject = None
+    form = None
+    if request.method == "POST" and request.user.has_perm("view_broadcast_email"):
+        form = PostForm(request.POST)
+        if form.is_valid():
+            print(subject)
+            form.save()
+            subject=request.POST['subject']
+            # return HttpResponseRedirect('/thanks/')
+    elif request.user.has_perm("view_broadcast_email"):
+
+        form = PostForm()
+    
+    else :
+        return HttpResponse("Invalid request")
+
+    return render(request, 'index.html',{'form':form,'subject':subject})
+
 
 class UserInitApi(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)

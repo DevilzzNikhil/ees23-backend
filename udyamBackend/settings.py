@@ -4,6 +4,7 @@ import mimetypes
 mimetypes.add_type("text/css", ".css", True)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMPLATE_DIR=os.path.join(BASE_DIR,'Templates') 
 
 SECRET_KEY = 'django-insecure-fijm!a(uvvj%g(atmgeiq0)6*(7f(tuwdxjwi^ds$8*et8#72v'
 
@@ -53,7 +54,7 @@ ROOT_URLCONF = 'udyamBackend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATE_DIR,],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
