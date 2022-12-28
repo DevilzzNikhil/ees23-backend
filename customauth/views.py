@@ -1,4 +1,4 @@
-from rest_framework import serializers, generics, status
+from rest_framework import serializers, generics, status, permissions
 # from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import UserAcount
@@ -8,8 +8,8 @@ from django.core.exceptions import ValidationError
 from typing import Tuple
 from udyamBackend.settings import CLIENT_ID
 import requests
-# from django.contrib.auth import login, logout
-# from rest_framework.authtoken.models import Token
+from django.contrib.auth import login, logout
+from rest_framework.authtoken.models import Token
 
 
 GOOGLE_ID_TOKEN_INFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
@@ -66,6 +66,7 @@ def user_get_me(*, user: UserAcount):
         'message': "Your registration was successful!",
     }
 
+
 class UserInitApi(generics.GenericAPIView):
     class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
@@ -90,5 +91,18 @@ class UserInitApi(generics.GenericAPIView):
             user, bool = user_get_or_create(**serializer.validated_data)
         
         response = Response(data=user_get_me(user=UserAcount.objects.get(email=email)))
-        return response
+        token,_ = Token.objects.get_or_create(user = user)
+
+        return Response({"token" : token.key})
+
+
+class LogoutView(generics.GenericAPIView):
+
+    permission_classes = (permissions.IsAuthenticated)
+
+    def get(self, request):
+        request.user.auth_token.delete()
+        logout(request)
+        return Response(status=status.HTTP_200_OK)
+
             
