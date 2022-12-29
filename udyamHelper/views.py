@@ -96,7 +96,7 @@ class ViewAllEvent(generics.ListAPIView):
     queryset = Event.objects.all()
 
 class TeamCreateView(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = TeamSerializer
 
     def post(self, request):
