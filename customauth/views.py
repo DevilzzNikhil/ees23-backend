@@ -157,6 +157,7 @@ class UserInitApi(generics.GenericAPIView):
         college_name = serializers.CharField(required=True)
         year = serializers.CharField(required=True)
         phone_number = serializers.CharField(required=True)
+        serializer_class=InputSerializer
 
     def post(self, request, *args, **kwargs):
         # print(request.data)
