@@ -21,7 +21,7 @@ def checks(request):
             if request.data["member2"]
             else None
         )
-        event_teams = Team.objects.filter(event=event)
+        event_teams = Team.objects.filter(eventname=event)
         first_yearites = 0
         second_yearites = 0
         if leader.year == "FIRST":
@@ -125,6 +125,6 @@ class TeamCountView(generics.GenericAPIView):
     def get(self, request):
         res = {}
         for event in Event.objects.all():
-            teams = Team.objects.filter(event=event)
+            teams = Team.objects.filter(eventname=event)
             res[event.eventname] = teams.count()
         return Response(res, status=status.HTTP_200_OK)
