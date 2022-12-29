@@ -1,3 +1,4 @@
+
 from rest_framework import serializers, generics, status
 # from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -150,7 +151,7 @@ class UserInitApi(generics.GenericAPIView):
             user, bool = user_get_or_create(**serializer.validated_data)
         
         token,_ = Token.objects.get_or_create(user = user)
-        response = Response(data=user_get_me(user=UserAcount.objects.get(email=email)),{"token" : token.key})
+        response = Response({"token" : token.key},data=user_get_me(user=UserAcount.objects.get(email=email)))
         
         return response
       
@@ -163,3 +164,4 @@ class LogoutView(generics.GenericAPIView):
         logout(request)
         return Response(status=status.HTTP_200_OK)      
             
+
