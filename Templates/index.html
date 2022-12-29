@@ -30,7 +30,7 @@
         </div>
         
     </form>
-   <form onsubmit="return validate(this)" method="get" action="/auth/broadcast/{{subject}}/" >
+   <form onsubmit="return validate(this)" method="get" action="/auth/broadcast/{{subject}}/{{created}}/" >
         {% csrf_token %}
         <div class="d-flex justify-content-center mt-1 mb-5">
             {% if subject != None %}
