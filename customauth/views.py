@@ -129,11 +129,6 @@ def broadcast_mail(request,subject):
 #         "subject",
 #     ]
 
-def mailChailaija(request):
-    if request.method == "POST":
-        print("Hello")
-
-
 def index(request):
     subject = None
     form = None
