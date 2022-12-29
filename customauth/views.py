@@ -81,11 +81,11 @@ def user_get_me(*, user: UserAcount):
     }
 
 # Custom
-def broadcast_mail(request,subject):
+def broadcast_mail(request,subject,created):
 
 
     if request.method == "GET" and request.user.has_perm("view_broadcast_email"):
-        message = BroadCast_Email.objects.get(subject=subject).message
+        message = BroadCast_Email.objects.get(subject=subject,created=created).message
         users = UserAcount.objects.all()
         list_email_user = [user.email for user in users]
         n = 100
@@ -96,43 +96,15 @@ def broadcast_mail(request,subject):
             email = EmailMessage(subject, message, bcc=group)
             email.content_subtype = "html"
             email.send()
+
         return HttpResponse("Mail sent successfully")
     return HttpResponse("Invalid request")
 
 
-# def broadcastMail(request):
-#     if request.method=="POST":
-#         #Get the POST parameters
-#         subject=request.POST['subject']
-#         date=request.POST['date']
-#         time=request.POST['time']
-#         message=request.POST['message']
-
-
-#         list_email_user = [
-#             p.email for p in UserAcount.objects.all()
-#         ]  #: if p.email != settings.EMAIL_HOST_USER   #this for exception
-#         n = 100
-#         list_group = [
-#             list_email_user[i: i + n] for i in range(0, len(list_email_user), n)
-#         ]
-#         for group in list_group:
-#             EmailThread(
-#                 subject, mark_safe(obj_selected.message), group
-#             ).start()
-
-#     broadcastMail.short_description = "Submit BroadCast (Select 1 Only)"
-#     broadcastMail.allow_tags = True
-
-#     actions = ["broadcastMail"]
-
-#     list_display = ("subject", "created")
-#     search_fields = [
-#         "subject",
-#     ]
-
 def index(request):
+    
     subject = None
+    created = None
     form = None
     if request.method == "POST" and request.user.has_perm("view_broadcast_email"):
         form = PostForm(request.POST)
@@ -140,6 +112,7 @@ def index(request):
             print(subject)
             form.save()
             subject=request.POST['subject']
+            created=request.POST['created']
             # return HttpResponseRedirect('/thanks/')
     elif request.user.has_perm("view_broadcast_email"):
 
@@ -148,7 +121,7 @@ def index(request):
     else :
         return HttpResponse("Invalid request")
 
-    return render(request, 'index.html',{'form':form,'subject':subject})
+    return render(request, 'index.html',{'form':form,'subject':subject,'created':created})
 
 
 class UserInitApi(generics.GenericAPIView):
