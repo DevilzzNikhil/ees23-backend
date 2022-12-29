@@ -30,7 +30,8 @@
         </div>
         
     </form>
-    <form method="post" action="/auth/broadcast/{{subject}}/">
+   <form onsubmit="return validate(this)" method="get" action="/auth/broadcast/{{subject}}/" >
+        {% csrf_token %}
         <div class="d-flex justify-content-center mt-1 mb-5">
             {% if subject != None %}
                 <button type="submit" class="btn btn-outline-dark mt-3 fs-4" >Broadcast</button>
@@ -41,6 +42,11 @@
         </div>
         
     </form>
+    <script>
+            function validate(form) {
+                return confirm("Do not close until 'Mail Sent Successfully' message is displayed. Continue Now?");
+            }
+    </script>
 
 </body>
 </html>
