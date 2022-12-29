@@ -68,12 +68,16 @@ def user_get_me(*, user: UserAcount):
 
 
 class UserInitApi(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    
     class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
         name = serializers.CharField(required=True)
         college_name = serializers.CharField(required=True)
         year = serializers.CharField(required=True)
         phone_number = serializers.CharField(required=True)
+
+    serializer_class=InputSerializer
 
     def post(self, request, *args, **kwargs):
         # print(request.data)
@@ -90,10 +94,10 @@ class UserInitApi(generics.GenericAPIView):
                 return Response(error, status=status.HTTP_409_CONFLICT)
             user, bool = user_get_or_create(**serializer.validated_data)
         
-        response = Response(data=user_get_me(user=UserAcount.objects.get(email=email)))
         token,_ = Token.objects.get_or_create(user = user)
-
-        return Response({"token" : token.key})
+        response = Response({"token" : token.key},data=user_get_me(user=UserAcount.objects.get(email=email)))
+        
+        return response
 
 
 class LogoutView(generics.GenericAPIView):
