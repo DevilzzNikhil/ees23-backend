@@ -18,6 +18,8 @@ from django.shortcuts import render
 from.models import BroadCast_Email
 from.forms import PostForm
 from django.http import HttpResponseRedirect
+from django.contrib.auth import login, logout
+from rest_framework.authtoken.models import Token
 
 # from models import UserAccount
 # from django.contrib.auth import login, logout
@@ -174,6 +176,17 @@ class UserInitApi(generics.GenericAPIView):
                 return Response(error, status=status.HTTP_409_CONFLICT)
             user, bool = user_get_or_create(**serializer.validated_data)
         
-        response = Response(data=user_get_me(user=UserAcount.objects.get(email=email)))
+        token,_ = Token.objects.get_or_create(user = user)
+        response = Response(data=user_get_me(user=UserAcount.objects.get(email=email)),{"token" : token.key})
+        
         return response
+      
+class LogoutView(generics.GenericAPIView):
+
+    permission_classes = (permissions.IsAuthenticated)
+
+    def get(self, request):
+        request.user.auth_token.delete()
+        logout(request)
+        return Response(status=status.HTTP_200_OK)      
             

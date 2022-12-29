@@ -4,6 +4,7 @@ import mimetypes
 mimetypes.add_type("text/css", ".css", True)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 TEMPLATE_DIR=os.path.join(BASE_DIR,'Templates') 
 
 SECRET_KEY = 'django-insecure-fijm!a(uvvj%g(atmgeiq0)6*(7f(tuwdxjwi^ds$8*et8#72v'
@@ -11,6 +12,7 @@ SECRET_KEY = 'django-insecure-fijm!a(uvvj%g(atmgeiq0)6*(7f(tuwdxjwi^ds$8*et8#72v
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
@@ -27,6 +29,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'customauth',
     "corsheaders",
+    'udyamHelper',
     'ckeditor',
     'ckeditor_uploader',
 ]
@@ -45,7 +48,10 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
-    )
+    ),
+    'DEFAULT_PERMISSION_CLASSES':(
+                'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
 
