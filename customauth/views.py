@@ -66,16 +66,17 @@ def user_get_me(*, user: UserAcount):
         'message': "Your registration was successful!",
     }
 
-
-class UserInitApi(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    class InputSerializer(serializers.Serializer):
+class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
         name = serializers.CharField(required=True)
         college_name = serializers.CharField(required=True)
         year = serializers.CharField(required=True)
         phone_number = serializers.CharField(required=True)
+
+class UserInitApi(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    
 
     serializer_class=InputSerializer
 
@@ -102,7 +103,8 @@ class UserInitApi(generics.GenericAPIView):
 
 class LogoutView(generics.GenericAPIView):
 
-    permission_classes = (permissions.IsAuthenticated)
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class =  InputSerializer
 
     def get(self, request):
         request.user.auth_token.delete()
