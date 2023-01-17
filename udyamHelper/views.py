@@ -9,7 +9,7 @@ from rest_framework import generics, permissions, status
 
 def checks(request):
     try:
-        event = Event.objects.get(eventname=request.data["event"])
+        event = Event.objects.get(event=request.data["event"])
         leader = UserAcount.objects.get(email=request.data["leader"])
         member1 = (
             UserAcount.objects.get(email=request.data["member1"])
@@ -21,7 +21,7 @@ def checks(request):
             if request.data["member2"]
             else None
         )
-        event_teams = Team.objects.filter(eventname=event)
+        event_teams = Team.objects.filter(event=event)
         first_yearites = 0
         second_yearites = 0
         if leader.year == "FIRST":
@@ -108,11 +108,11 @@ class TeamCreateView(generics.GenericAPIView):
         serializer.save()
         team = Team.objects.get(
             teamname=request.data["teamname"],
-            event=Event.objects.get(eventname=request.data["event"]),
+            event=Event.objects.get(event=request.data["event"]),
         )
         team_info = {
             "teamname": team.teamname,
-            "event": team.event.eventname,
+            "event": team.event.event,
             "leader": team.leader.email,
             "member1": team.member1.email if team.member1 else None,
             "member2": team.member2.email if team.member2 else None,
@@ -121,10 +121,12 @@ class TeamCreateView(generics.GenericAPIView):
         return Response(team_info, status=status.HTTP_200_OK)
 
 class TeamCountView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class=TeamSerializer
 
     def get(self, request):
         res = {}
         for event in Event.objects.all():
-            teams = Team.objects.filter(eventname=event)
-            res[event.eventname] = teams.count()
+            teams = Team.objects.filter(event=event)
+            res[event.event] = teams.count()
         return Response(res, status=status.HTTP_200_OK)
