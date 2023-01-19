@@ -1,9 +1,6 @@
 from rest_framework import serializers, generics, status, permissions
-# from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import UserAcount
-# from django.conf import settings
-# from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from typing import Tuple
 from udyamBackend.settings import CLIENT_ID
@@ -35,7 +32,6 @@ def google_validate(*, id_token: str, email:str) -> bool:
 
 
 def user_create(email, **extra_field) -> UserAcount:
-    # print(extra_field)
     extra_fields = {
         'is_staff': False,
         'is_active': True,
@@ -50,12 +46,10 @@ def user_create(email, **extra_field) -> UserAcount:
 
 
 def user_get_or_create(*, email: str, **extra_data) -> Tuple[UserAcount, bool]:
-    # print(email)
     user = UserAcount.objects.filter(email=email).first()
 
     if user:
         return user, False
-    # print(extra_data)
     return user_create(email=email, **extra_data), True
 
 def user_get_me(*, user: UserAcount):
@@ -81,7 +75,6 @@ class UserInitApi(generics.GenericAPIView):
     serializer_class=InputSerializer
 
     def post(self, request, *args, **kwargs):
-        # print(request.data)
         id_token = request.headers.get('Authorization')
         email = request.data.get("email")
         google_validate(id_token=id_token,email=email)

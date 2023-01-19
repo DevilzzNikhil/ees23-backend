@@ -1,8 +1,9 @@
-from .models import Team, Event 
+from .models import Team, Event, NoticeBoard
 from rest_framework.response import Response
-from .serializers import EventSerializer, TeamSerializer
+from .serializers import EventSerializer, TeamSerializer, NoticeBoardSerializer
 from customauth.models import UserAcount
 from rest_framework import generics, permissions, status
+from django.utils.datastructures import MultiValueDictKeyError
 
 
 
@@ -130,3 +131,27 @@ class TeamCountView(generics.GenericAPIView):
             teams = Team.objects.filter(event=event)
             res[event.event] = teams.count()
         return Response(res, status=status.HTTP_200_OK)
+    
+class GetAllNoticeView(generics.RetrieveAPIView):
+    serializer_class = NoticeBoardSerializer
+    queryset = NoticeBoard.objects.all()
+    def get(self, request, event):
+        if( event == "all"):
+            eventslist = self.queryset.all()
+        else :
+            eventslist = self.queryset.filter(event=event)
+            
+        context=[]
+        for event in eventslist:
+            context.append({
+                "title": event.title,
+                "description": event.description,
+                "link": event.link,
+            })
+        return Response(context, status=status.HTTP_200_OK)
+    
+
+        
+            
+    
+    
