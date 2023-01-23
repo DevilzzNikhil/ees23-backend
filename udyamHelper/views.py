@@ -146,6 +146,7 @@ class GetAllNoticeView(generics.RetrieveAPIView):
             context.append({
                 "title": event.title,
                 "description": event.description,
+                "date": event.date,
                 "link": event.link,
             })
         return Response(context, status=status.HTTP_200_OK)
@@ -153,5 +154,35 @@ class GetAllNoticeView(generics.RetrieveAPIView):
 
         
             
-    
-    
+class TeamGetUserView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = TeamSerializer
+
+    def appendTeam(self, teams, event_teams):
+        for team in teams:
+            team_info = {
+                "id": team.id,
+                "teamname": team.teamname,
+                "event": team.event.event,
+                "leader": team.leader.email,
+                "member1": team.member1.email if team.member1 else None,
+                "member2": team.member2.email if team.member2 else None,
+            }
+            event_teams.append(team_info)
+
+    def get(self, request):
+        try:
+            teams_as_leader = Team.objects.filter(leader=request.user)
+            teams_as_member1 = Team.objects.filter(member1=request.user)
+            teams_as_member2 = Team.objects.filter(member2=request.user)
+            event_teams = []
+            self.appendTeam(teams_as_leader, event_teams)
+            self.appendTeam(teams_as_member1, event_teams)
+            self.appendTeam(teams_as_member2, event_teams)
+            return Response(event_teams, status=status.HTTP_200_OK)
+        except UserAcount.DoesNotExist:
+            return Response(
+                {"error": "No such user exists"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+
