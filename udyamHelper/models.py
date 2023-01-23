@@ -8,6 +8,22 @@ class Event(models.Model):
 
     def __str__(self):
         return self.event
+  
+  
+EVENTS = (
+    ("Mashal", "Mashal"),
+    ("Udgam", "Udgam"),
+    ("Udyam", "Udyam"),
+)
+  
+class NoticeBoard(models.Model):
+    title = models.TextField(blank=False, null=False, unique=True)
+    description = models.TextField(blank=False, null=False)
+    date = models.DateField(auto_now=True)
+    link = models.TextField(blank=False, null=False)
+    event = models.CharField(choices=EVENTS, max_length=20, blank=False, null=False)
+    def __str__(self):
+        return f"{self.event} - {self.title}"
 
 
 class Team(models.Model):

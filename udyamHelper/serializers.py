@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Event, Team
+from .models import Event, Team, NoticeBoard
 from customauth.models import UserAcount
 
 class EventSerializer(serializers.ModelSerializer):
@@ -45,3 +45,8 @@ class TeamSerializer(serializers.ModelSerializer):
             "member1",
             "member2",
         ]
+        
+class NoticeBoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NoticeBoard
+        fields = "__all__"
