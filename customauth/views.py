@@ -68,10 +68,6 @@ class InputSerializer(serializers.Serializer):
         phone_number = serializers.CharField(required=True)
 
 class UserInitApi(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    
-    
-
     serializer_class=InputSerializer
 
     def post(self, request, *args, **kwargs):
