@@ -51,6 +51,7 @@ class UserAcount(AbstractBaseUser):
     college_name = models.CharField(max_length=200, blank=False, null=False)
     year = models.CharField(max_length=20, choices=YEARS, blank=False, null=False)
     phone_number = models.CharField(validators=[isValid], max_length=16, blank=False, null=False)
+    radianite_points = models.BigIntegerField(default=0, blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
