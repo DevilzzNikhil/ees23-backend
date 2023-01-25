@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Event, Team
+from .models import Event, Team, NoticeBoard
 from customauth.models import UserAcount
 
 class EventSerializer(serializers.ModelSerializer):
@@ -18,7 +18,7 @@ class TeamSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         data = self.validated_data
         teamname = data["teamname"]
-        event = Event.objects.get(eventname = data["email"])
+        event = Event.objects.get(event = data["event"])
         leader = UserAcount.objects.get(email = data["leader"])
         member1 = (
             UserAcount.objects.get(email=data["member1"]) if data["member1"] else None
@@ -45,3 +45,8 @@ class TeamSerializer(serializers.ModelSerializer):
             "member1",
             "member2",
         ]
+        
+class NoticeBoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NoticeBoard
+        fields = "__all__"

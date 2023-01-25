@@ -1,15 +1,16 @@
-from .models import Team, Event 
+from .models import Team, Event, NoticeBoard
 from rest_framework.response import Response
-from .serializers import EventSerializer, TeamSerializer
+from .serializers import EventSerializer, TeamSerializer, NoticeBoardSerializer
 from customauth.models import UserAcount
 from rest_framework import generics, permissions, status
+from django.utils.datastructures import MultiValueDictKeyError
 
 
 
 
 def checks(request):
     try:
-        event = Event.objects.get(eventname=request.data["event"])
+        event = Event.objects.get(event=request.data["event"])
         leader = UserAcount.objects.get(email=request.data["leader"])
         member1 = (
             UserAcount.objects.get(email=request.data["member1"])
@@ -21,7 +22,7 @@ def checks(request):
             if request.data["member2"]
             else None
         )
-        event_teams = Team.objects.filter(eventname=event)
+        event_teams = Team.objects.filter(event=event)
         first_yearites = 0
         second_yearites = 0
         if leader.year == "FIRST":
@@ -108,11 +109,11 @@ class TeamCreateView(generics.GenericAPIView):
         serializer.save()
         team = Team.objects.get(
             teamname=request.data["teamname"],
-            event=Event.objects.get(eventname=request.data["event"]),
+            event=Event.objects.get(event=request.data["event"]),
         )
         team_info = {
             "teamname": team.teamname,
-            "event": team.event.eventname,
+            "event": team.event.event,
             "leader": team.leader.email,
             "member1": team.member1.email if team.member1 else None,
             "member2": team.member2.email if team.member2 else None,
@@ -121,10 +122,67 @@ class TeamCreateView(generics.GenericAPIView):
         return Response(team_info, status=status.HTTP_200_OK)
 
 class TeamCountView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class=TeamSerializer
 
     def get(self, request):
         res = {}
         for event in Event.objects.all():
-            teams = Team.objects.filter(eventname=event)
-            res[event.eventname] = teams.count()
+            teams = Team.objects.filter(event=event)
+            res[event.event] = teams.count()
         return Response(res, status=status.HTTP_200_OK)
+    
+class GetAllNoticeView(generics.RetrieveAPIView):
+    serializer_class = NoticeBoardSerializer
+    queryset = NoticeBoard.objects.all()
+    def get(self, request, event):
+        if( event == "all"):
+            eventslist = self.queryset.all()
+        else :
+            eventslist = self.queryset.filter(event=event)
+            
+        context=[]
+        for event in eventslist:
+            context.append({
+                "title": event.title,
+                "description": event.description,
+                "date": event.date,
+                "link": event.link,
+            })
+        return Response(context, status=status.HTTP_200_OK)
+    
+
+        
+            
+class TeamGetUserView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = TeamSerializer
+
+    def appendTeam(self, teams, event_teams):
+        for team in teams:
+            team_info = {
+                "id": team.id,
+                "teamname": team.teamname,
+                "event": team.event.event,
+                "leader": team.leader.email,
+                "member1": team.member1.email if team.member1 else None,
+                "member2": team.member2.email if team.member2 else None,
+            }
+            event_teams.append(team_info)
+
+    def get(self, request):
+        try:
+            teams_as_leader = Team.objects.filter(leader=request.user)
+            teams_as_member1 = Team.objects.filter(member1=request.user)
+            teams_as_member2 = Team.objects.filter(member2=request.user)
+            event_teams = []
+            self.appendTeam(teams_as_leader, event_teams)
+            self.appendTeam(teams_as_member1, event_teams)
+            self.appendTeam(teams_as_member2, event_teams)
+            return Response(event_teams, status=status.HTTP_200_OK)
+        except UserAcount.DoesNotExist:
+            return Response(
+                {"error": "No such user exists"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+

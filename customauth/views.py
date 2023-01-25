@@ -1,4 +1,3 @@
-
 from rest_framework import serializers, generics, status
 # from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -125,14 +124,17 @@ def index(request):
     return render(request, 'index.html',{'form':form,'subject':subject,'created':created})
 
 
-class UserInitApi(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    class InputSerializer(serializers.Serializer):
+class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
         name = serializers.CharField(required=True)
         college_name = serializers.CharField(required=True)
         year = serializers.CharField(required=True)
         phone_number = serializers.CharField(required=True)
+
+
+class UserInitApi(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    
         
     serializer_class=InputSerializer
     
@@ -158,11 +160,12 @@ class UserInitApi(generics.GenericAPIView):
       
 class LogoutView(generics.GenericAPIView):
 
-    permission_classes = (permissions.IsAuthenticated)
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class =  InputSerializer
 
     def get(self, request):
         request.user.auth_token.delete()
         logout(request)
-        return Response(status=status.HTTP_200_OK)      
+        return Response(status=status.HTTP_200_OK)    
             
 

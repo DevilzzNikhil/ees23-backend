@@ -69,3 +69,4 @@ class BroadCast_Email_Admin(admin.ModelAdmin):
 
 
 admin.site.register(BroadCast_Email, BroadCast_Email_Admin)
+

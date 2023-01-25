@@ -55,6 +55,7 @@ class UserAcount(AbstractBaseUser):
     year = models.CharField(max_length=20, choices=YEARS, blank=False, null=False)
     phone_number = models.CharField(validators=[isValid], max_length=16, blank=False, null=False)
     group = models.ForeignKey(Group, on_delete=models.CASCADE ,blank=True, null=True)
+    radianite_points = models.BigIntegerField(default=0, blank=True, null=True)
 
 
     USERNAME_FIELD = "email"
@@ -105,3 +106,8 @@ class BroadCast_Email(models.Model):
     class Meta:
         verbose_name = "BroadCast Email to all Member"
         verbose_name_plural = "BroadCast Email"
+
+
+
+
+
