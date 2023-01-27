@@ -56,8 +56,6 @@ def user_create(email, **extra_field) -> UserAcount:
         **extra_field
     }
 
-    print(extra_fields)
-
     user = UserAcount(email=email, **extra_fields)
     user.save()
     return user
@@ -109,7 +107,6 @@ def index(request):
     if request.method == "POST" and request.user.has_perm("view_broadcast_email"):
         form = PostForm(request.POST)
         if form.is_valid():
-            print(subject)
             form.save()
             subject=request.POST['subject']
             created=request.POST['created']

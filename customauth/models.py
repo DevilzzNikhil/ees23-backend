@@ -22,7 +22,6 @@ YEARS = (
 class AccountManager(BaseUserManager):
 
     def create_user(self, email, password='Random'):
-        print(email, password)
         if not email:
             raise ValueError("The Email must be set")
 
@@ -67,16 +66,14 @@ class UserAcount(AbstractBaseUser):
         return f"{self.email}"
 
     def has_perm(self, perm, obj=None):
+        if "." in perm: perm=perm.split(".")[1]
         if self.is_admin:
-            print(self.get_all_permissions())
             return True
         if self.is_staff and perm in self.get_all_permissions():
             return True
-        else: 
-            print(self.get_all_permissions())
         return False
     
-    # return all the user permission
+    # # return all the user permission
     def get_all_permissions(self, obj=None):
         
         all_perm=[]
@@ -84,7 +81,6 @@ class UserAcount(AbstractBaseUser):
             return all_perm
         for perm in self.group.permissions.all():
             all_perm.append(perm.codename)
-        print(all_perm)
         return all_perm
         
 
