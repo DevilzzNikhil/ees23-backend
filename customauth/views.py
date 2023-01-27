@@ -49,7 +49,6 @@ def google_validate(*, id_token: str, email:str) -> bool:
 
 
 def user_create(email, **extra_field) -> UserAcount:
-    permission_classes = (permissions.IsAuthenticated,)
     extra_fields = {
         'is_staff': False,
         'is_active': True,
