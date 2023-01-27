@@ -130,9 +130,6 @@ class InputSerializer(serializers.Serializer):
 
 
 class UserInitApi(generics.GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    
-        
     serializer_class=InputSerializer
     
     def post(self, request, *args, **kwargs):
