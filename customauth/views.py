@@ -21,6 +21,9 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth import login, logout
 from rest_framework.authtoken.models import Token
 
+from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+
 GOOGLE_ID_TOKEN_INFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 
 def google_validate(*, id_token: str, email:str) -> bool:
@@ -125,6 +128,24 @@ class LogoutView(generics.GenericAPIView):
         logout(request)
         return Response(status=status.HTTP_200_OK)
 
+  
+
+@api_view(('GET',))
+def leaderBoard(request):
+    users = UserAcount.objects.filter(radianite_points__gt=0).order_by("-radianite_points").values()
+    array=[]
+    for user in users :
+        array.append({
+            "name":user['name'],
+            "email":user['email'],
+            "radianite_points":user['radianite_points'],
+            "phone_number":user['phone_number'],
+        })
+        if(len(array)==10):
+            break
+    return Response({"array":array}, status=status.HTTP_200_OK)
+    
+    
 def broadcast_mail(request,subject,created):
 
 
