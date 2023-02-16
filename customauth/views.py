@@ -136,10 +136,10 @@ def leaderBoard(request):
     array=[]
     for user in users :
         array.append({
-            "name":user.name,
-            "email":user.email,
-            "radianite_points":user.radianite_points,
-            "phone_number":user.phone_number,
+            "name":user['name'],
+            "email":user['email'],
+            "radianite_points":user['radianite_points'],
+            "phone_number":user['phone_number'],
         })
         if(len(array)==10):
             break
