@@ -24,26 +24,22 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 
+from .services import google_get_access_token, google_get_user_info
 GOOGLE_ID_TOKEN_INFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 
-def google_validate(*, id_token: str, email:str) -> bool:
-
-    response = requests.get(
-        GOOGLE_ID_TOKEN_INFO_URL,
-        params={'id_token': id_token}
-    )
-
-    if not response.ok:
-        raise ValidationError('Id token is invalid')
-
-    audience = response.json()['aud']
-    if audience != CLIENT_ID:
-        raise ValidationError("Invalid Audience")
-
-    if (response.json())["email"]!=email:
-        raise ValidationError('Email mismatch')
-
-    return True
+def google_validate(*, code: str) -> bool:
+    redirect_uri = "https://eesiitbhu.in"
+    try:
+        access_token = google_get_access_token(code=code, redirect_uri=redirect_uri)
+    except:
+        access_token=code
+    user_data = google_get_user_info(access_token=access_token)
+    user_data={
+        "givenName":user_data["given_name"]+" "+user_data["family_name"],
+        "email":user_data["email"],
+        "code": access_token
+    }
+    return user_data
 
 
 def user_create(email, **extra_field) -> UserAcount:
@@ -100,14 +96,14 @@ class UserInitApi(generics.GenericAPIView):
     serializer_class=InputSerializer
 
     def post(self, request, *args, **kwargs):
-        id_token = request.headers.get('Authorization')
-        email = request.data.get("email")
-        google_validate(id_token=id_token,email=email)
+        code = request.headers.get('Authorization')
+        userData=google_validate(code=code)
+        email=userData["email"]
 
         if UserAcount.objects.filter(email=email).count()==0:
             serializer = self.serializer_class(data=request.data)
-            if not serializer.is_valid():
-                error = {}
+            if not serializer.is_valid() or email!=request.data["email"]:
+                error = {"data":userData}
                 for err in serializer.errors:
                     error[err] = serializer.errors[err][0]
                 return Response(error, status=status.HTTP_409_CONFLICT)
@@ -116,7 +112,6 @@ class UserInitApi(generics.GenericAPIView):
 
         response = Response(data=user_get_me(user=UserAcount.objects.get(email=email)))
         return response
-
 
 class LogoutView(generics.GenericAPIView):
 
