@@ -10,7 +10,7 @@ from django.http import Http404
 from django.core.mail import EmailMessage
 from django.core.exceptions import ValidationError
 from typing import Tuple
-from udyamBackend.settings import CLIENT_ID
+from udyamBackend.settings import CLIENT_ID, CLIENT_SECRET
 import requests
 from django.core.mail import send_mail,EmailMultiAlternatives
 from .models import BroadCast_Email
@@ -29,6 +29,8 @@ GOOGLE_ID_TOKEN_INFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
 
 def google_validate(*, code: str) -> bool:
     redirect_uri = "https://eesiitbhu.in"
+    print(CLIENT_ID)
+    print(CLIENT_SECRET)
     try:
         access_token = google_get_access_token(code=code, redirect_uri=redirect_uri)
     except:
