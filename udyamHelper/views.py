@@ -262,7 +262,7 @@ def export_teams_xls(request):
     font_style = xlwt.XFStyle()
 
     rows = []
-    for team in Team.objects.exclude(submission__isnull=True).order_by("-event"):
+    for team in Team.objects.order_by("-event"):
         rows.append(
             [team.event, team.teamname, team.leader, team.member1, team.member2]
         )
