@@ -199,9 +199,8 @@ class TeamGetUserView(generics.ListAPIView):
             )
 
 
-@api_view(('GET',))
 def export_users_xls(request):
-    if request.user.is_authenticated is False or request.user.is_admin is False:
+    if request.user.is_admin is False:
         raise Http404
     
     response = HttpResponse(content_type="application/ms-excel")
@@ -237,15 +236,16 @@ def export_users_xls(request):
 
 
 
-@api_view(('GET',))
+# @api_view(('GET',))
 def export_teams_xls(request):
-    if request.user.is_authenticated is False or request.user.is_admin is False:
+    if request.user.is_admin is False:
         raise Http404
+    
     response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = 'attachment; filename="Submissions.xls"'
+    response["Content-Disposition"] = 'attachment; filename="Teams.xls"'
 
     wb = xlwt.Workbook(encoding="utf-8")
-    ws = wb.add_sheet("Submissions")
+    ws = wb.add_sheet("Teams")
 
     # Sheet header, first row
     row_num = 0
@@ -253,7 +253,7 @@ def export_teams_xls(request):
     font_style = xlwt.XFStyle()
     font_style.font.bold = True
 
-    columns = ["Team Event", "Team Name", "Leader", "Member1", "Member2"]
+    columns = ["Team Event", "Team Name", "Leader Name","Leader Email","Leader Phone Number", "Member1 Name", "Member1 Email", "Member1 Phone Number", "Member2 Name", "Member2 Email", "Member2 Phone Number"]
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style)
@@ -264,7 +264,7 @@ def export_teams_xls(request):
     rows = []
     for team in Team.objects.order_by("-event"):
         rows.append(
-            [team.event, team.teamname, team.leader, team.member1, team.member2]
+            [team.event.event, team.teamname, team.leader.name, team.leader.email, team.leader.phone_number, team.member1.name if(team.member1) else " ", team.member1.email if(team.member1) else " ", team.member1.phone_number if(team.member1) else " ", team.member2.name if(team.member2) else " ", team.member2.email if(team.member2) else " ", team.member2.phone_number if(team.member2) else " "]
         )
 
     for row in rows:
