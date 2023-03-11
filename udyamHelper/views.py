@@ -2,11 +2,24 @@ from .models import Team, Event, NoticeBoard
 from rest_framework.response import Response
 from .serializers import EventSerializer, TeamSerializer, NoticeBoardSerializer
 from customauth.models import UserAcount
-from rest_framework import generics, permissions, status
+from rest_framework import serializers,generics, permissions, status
+from rest_framework import permissions
 from django.utils.datastructures import MultiValueDictKeyError
+import xlwt
+import pandas as pd
+import shutil
+from django.http import HttpResponse
+from django.http import Http404
+from rest_framework.decorators import api_view, renderer_classes
 
 
 
+class InputSerializer(serializers.Serializer):
+        email = serializers.EmailField()
+        name = serializers.CharField(required=True)
+        college_name = serializers.CharField(required=True)
+        year = serializers.CharField(required=True)
+        phone_number = serializers.CharField(required=True)
 
 def checks(request):
     try:
@@ -186,3 +199,78 @@ class TeamGetUserView(generics.ListAPIView):
             )
 
 
+@api_view(('GET',))
+def export_users_xls(request):
+    if request.user.is_authenticated is False or request.user.is_admin is False:
+        raise Http404
+    
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = 'attachment; filename="UserAccounts.xls"'
+
+    wb = xlwt.Workbook(encoding="utf-8")
+    ws = wb.add_sheet("User Accounts")
+
+    # Sheet header, first row
+    row_num = 0
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    columns = ["Name", "Email", "Year", "College", "Radianite Points"]
+
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style)
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    rows = UserAcount.objects.all().values_list(
+        "name", "email", "year", "college_name", "radianite_points"
+    )
+    for row in rows:
+        row_num += 1
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+
+    wb.save(response)
+    return response
+
+
+
+@api_view(('GET',))
+def export_teams_xls(request):
+    if request.user.is_authenticated is False or request.user.is_admin is False:
+        raise Http404
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = 'attachment; filename="Submissions.xls"'
+
+    wb = xlwt.Workbook(encoding="utf-8")
+    ws = wb.add_sheet("Submissions")
+
+    # Sheet header, first row
+    row_num = 0
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    columns = ["Team Event", "Team Name", "Leader", "Member1", "Member2"]
+
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style)
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    rows = []
+    for team in Team.objects.exclude(submission__isnull=True).order_by("-event"):
+        rows.append(
+            [team.event, team.teamname, team.leader, team.member1, team.member2]
+        )
+
+    for row in rows:
+        row_num += 1
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+
+    wb.save(response)
+    return response
