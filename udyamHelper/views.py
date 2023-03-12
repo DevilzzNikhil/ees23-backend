@@ -199,6 +199,7 @@ class TeamGetUserView(generics.ListAPIView):
             )
 
 
+@api_view(('GET',))
 def export_users_xls(request):
     if request.user.is_admin is False:
         raise Http404
@@ -236,7 +237,7 @@ def export_users_xls(request):
 
 
 
-# @api_view(('GET',))
+@api_view(('GET',))
 def export_teams_xls(request):
     if request.user.is_admin is False:
         raise Http404
