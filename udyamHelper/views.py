@@ -201,6 +201,7 @@ class TeamGetUserView(generics.ListAPIView):
 
 
 
+@api_view(('GET',))
 def export_users_xls(request):
     if not request.user.has_perm("view_useracount") :
         raise Http404
@@ -238,7 +239,7 @@ def export_users_xls(request):
 
 
 
-# @api_view(('GET',))
+@api_view(('GET',))
 def export_teams_xls(request):
     if not request.user.has_perm("view_useracount") :
         raise Http404
@@ -385,7 +386,7 @@ class TeamView(generics.GenericAPIView):
     def teamInfo(self, team):
         team_info = {
             "teamname": team.teamname,
-            "event": team.event,
+            "event": team.event.event,
             "leader": team.leader.email,
             "member1": team.member1.email if team.member1 else None,
             "member2": team.member2.email if team.member2 else None,
