@@ -8,6 +8,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 import xlwt
 import pandas as pd
 import shutil
+import sys
 from django.http import HttpResponse
 from django.http import Http404
 from rest_framework.decorators import api_view, renderer_classes
@@ -199,9 +200,10 @@ class TeamGetUserView(generics.ListAPIView):
             )
 
 
+
 @api_view(('GET',))
 def export_users_xls(request):
-    if request.user.is_admin is False:
+    if not request.user.has_perm("view_useracount") :
         raise Http404
     
     response = HttpResponse(content_type="application/ms-excel")
@@ -239,9 +241,10 @@ def export_users_xls(request):
 
 @api_view(('GET',))
 def export_teams_xls(request):
-    if request.user.is_admin is False:
+    if not request.user.has_perm("view_useracount") :
         raise Http404
-    
+
+    # print(request.user)
     response = HttpResponse(content_type="application/ms-excel")
     response["Content-Disposition"] = 'attachment; filename="Teams.xls"'
 
@@ -275,3 +278,196 @@ def export_teams_xls(request):
 
     wb.save(response)
     return response
+
+
+def checks2(request):
+    try:
+        # teamname=request.data["teamname"]
+        
+        # print(request.data)
+        event = Event.objects.get(event=request.data["event"])
+        leader = UserAcount.objects.get(email=request.data["leader"])
+        try:
+            teamname=Team.objects.filter(event=event,leader=leader)[0].teamname
+        except:
+            return "Team Does Not Exist"
+
+        
+        member1 = (
+            UserAcount.objects.get(email=request.data["member1"])
+            if request.data["member1"]
+            else None
+        )
+        member2 = (
+            UserAcount.objects.get(email=request.data["member2"])
+            if request.data["member2"]
+            else None
+        )
+        # print(event)
+        # print(teamname)
+        # print(request.data["teamname"])
+        # print(leader)
+        # print(member1)
+        # print(member2)
+
+        event_teams = Team.objects.filter(event=event)
+        first_yearites = 0
+        second_yearites = 0
+        if leader.year == "FIRST":
+            first_yearites += 1
+        elif leader.year == "SECOND":
+            second_yearites += 1
+        if member2:
+            if member2.year == "FIRST":
+                first_yearites += 1
+            elif member2.year == "SECOND":
+                second_yearites += 1
+        if member1:
+            if member1.year == "FIRST":
+                first_yearites += 1
+            elif member1.year == "SECOND":
+                second_yearites += 1
+    except Event.DoesNotExist:
+        return "Event does not exist"
+    except UserAcount.DoesNotExist:
+        return "User does not exist"
+    
+    if (
+        request.data["leader"] == request.data["member1"]
+        or request.data["leader"] == request.data["member2"]
+        or (
+            request.data["member1"] == request.data["member2"]
+            and request.data["member1"] != ""
+        )
+    ):
+        return "Single user cannot be present twice in the team"
+    elif leader != request.user and member1 != request.user and member2 != request.user:
+        return "Requesting user must be a member of the team. Cannot edit a team which you are not a part of."
+    elif teamname != request.data["teamname"]:
+        if(Team.objects.filter(teamname=request.data["teamname"]).count()!=0):
+            return "Same Name team already exists."
+    elif member1!=None and request.data["member1"]==None:
+        return "Member1 Name cannot be an empty string"
+    elif member2!=None and request.data["member2"]==None:
+        return "Member2 Name cannot be an empty string"
+    elif (
+        (event_teams.filter(leader=member1).count() and event_teams.filter(leader=member1)[0].leader!=leader )
+        or (event_teams.filter(member1=member1).count() and event_teams.filter(member1=member1)[0].leader!=leader )
+        or (event_teams.filter(member2=member1).count() and event_teams.filter(member2=member1)[0].leader!=leader )
+    ) and member1 is not None:
+        return "Member 1 already has a team in this event"
+    elif (
+        (event_teams.filter(leader=member2).count() and event_teams.filter(leader=member2)[0].leader!=leader )
+        or (event_teams.filter(member1=member2).count() and event_teams.filter(member1=member2)[0].leader!=leader )
+        or (event_teams.filter(member2=member2).count() and event_teams.filter(member2=member2)[0].leader!=leader )
+    ) and member2 is not None:
+        return "Member 2 already has a team in this event"
+    elif (
+        second_yearites != 0
+        and first_yearites + second_yearites > event.members_after_1st_year
+    ):
+        return (
+            "Max size of a not-all-1st-yearites team is "
+            + str(event.members_after_1st_year)
+            + " for this event"
+        )
+    elif second_yearites == 0 and first_yearites > event.members_from_1st_year:
+        return (
+            "Max size of a all-1st-yearites team is "
+            + str(event.members_from_1st_year)
+            + " for this event"
+        )
+
+
+class TeamView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = TeamSerializer
+
+    def teamInfo(self, team):
+        team_info = {
+            "teamname": team.teamname,
+            "event": team.event.event,
+            "leader": team.leader.email,
+            "member1": team.member1.email if team.member1 else None,
+            "member2": team.member2.email if team.member2 else None,
+        }
+        return team_info
+
+    def get(self, request, id):
+        try:
+            team = Team.objects.get(id=id)
+            return Response(self.teamInfo(team), status=status.HTTP_200_OK)
+        except Team.DoesNotExist:
+            return Response(
+                {"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def patch(self, request, id):
+        try:
+            team = Team.objects.get(id=id)
+            event = Event.objects.get(event=request.data["event"])
+            leader = UserAcount.objects.get(email=request.data["leader"])
+            team.teamname = request.data["teamname"]
+            team.event = event
+            team.leader = leader
+            team.member1 = (
+                UserAcount.objects.get(email=request.data["member1"])
+                if request.data["member1"] != ""
+                else None
+            )
+            team.member2 = (
+                UserAcount.objects.get(email=request.data["member2"])
+                if request.data["member2"] != ""
+                else None
+            )
+            # print("HEllo1")
+            message = checks2(request)
+            # print("HEllo2")
+         
+            if message and message != "Team name already taken":
+                return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
+            # print("HEllo3")
+            team.save()
+            # print("HEllo7")
+            serializer = self.get_serializer(data=request.data)
+            # print("HEllo8")
+            serializer.is_valid(raise_exception=False)
+            team_info = {
+            "teamname": team.teamname,
+            "event": team.event.event,
+            "leader": team.leader.email,
+            "member1": team.member1.email if team.member1 else None,
+            "member2": team.member2.email if team.member2 else None,
+            }
+            # print("HEllo4")
+            return Response(team_info, status=status.HTTP_200_OK)
+        
+        except Team.DoesNotExist:
+            # print("HEllo5")
+            return Response(
+                {"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Event.DoesNotExist:
+            return Response(
+                {"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except UserAcount.DoesNotExist:
+            return Response(
+                {"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def delete(self, request, id):
+        if Team.objects.filter(id=id).count():
+            team = Team.objects.get(id=id)
+            if (
+                request.user == team.leader
+            ):
+                team.delete()
+                return Response(
+                    {"message": "Team deleted successfully"}, status=status.HTTP_200_OK
+                )
+            return Response(
+                {"error": "Only a team member is allowed to delete his/her team."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return Response({"error": "Team not found"}, status=status.HTTP_404_NOT_FOUND)
