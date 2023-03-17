@@ -221,7 +221,17 @@ def export_users_xls(request):
     columns = ["Name", "Email", "Year", "College", "Radianite Points"]
 
     for col_num in range(len(columns)):
-                for col_num in range(len(row)):
+        ws.write(row_num, col_num, columns[col_num], font_style)
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    rows = UserAcount.objects.all().values_list(
+        "name", "email", "year", "college_name", "radianite_points"
+    )
+    for row in rows:
+        row_num += 1
+        for col_num in range(len(row)):
             ws.write(row_num, col_num, row[col_num], font_style)
 
     wb.save(response)
@@ -236,7 +246,7 @@ def export_teams_xls(request):
 
     # print(request.user)
     response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = 'attachment; filename="Submissions.xls"'
+    response["Content-Disposition"] = 'attachment; filename="Teams.xls"'
 
     wb = xlwt.Workbook(encoding="utf-8")
     ws = wb.add_sheet("Teams")
@@ -431,7 +441,6 @@ class TeamView(generics.GenericAPIView):
             }
             # print("HEllo4")
             return Response(team_info, status=status.HTTP_200_OK)
-        
         except Team.DoesNotExist:
             # print("HEllo5")
             return Response(
