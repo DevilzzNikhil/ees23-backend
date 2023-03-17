@@ -115,14 +115,11 @@ class TeamCreateView(generics.GenericAPIView):
     serializer_class = TeamSerializer
 
     def post(self, request):
-        
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         message = checks(request)
-
         if message:
             return Response({"error": message}, status=status.HTTP_403_FORBIDDEN)
-        
         serializer.save()
         team = Team.objects.get(
             teamname=request.data["teamname"],
@@ -204,6 +201,7 @@ class TeamGetUserView(generics.ListAPIView):
 
 
 
+@api_view(('GET',))
 def export_users_xls(request):
     if not request.user.has_perm("view_useracount") :
         raise Http404
@@ -223,17 +221,7 @@ def export_users_xls(request):
     columns = ["Name", "Email", "Year", "College", "Radianite Points"]
 
     for col_num in range(len(columns)):
-        ws.write(row_num, col_num, columns[col_num], font_style)
-
-    # Sheet body, remaining rows
-    font_style = xlwt.XFStyle()
-
-    rows = UserAcount.objects.all().values_list(
-        "name", "email", "year", "college_name", "radianite_points"
-    )
-    for row in rows:
-        row_num += 1
-        for col_num in range(len(row)):
+                for col_num in range(len(row)):
             ws.write(row_num, col_num, row[col_num], font_style)
 
     wb.save(response)
@@ -241,14 +229,14 @@ def export_users_xls(request):
 
 
 
-# @api_view(('GET',))
+@api_view(('GET',))
 def export_teams_xls(request):
     if not request.user.has_perm("view_useracount") :
         raise Http404
 
     # print(request.user)
     response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = 'attachment; filename="Teams.xls"'
+    response["Content-Disposition"] = 'attachment; filename="Submissions.xls"'
 
     wb = xlwt.Workbook(encoding="utf-8")
     ws = wb.add_sheet("Teams")
@@ -388,7 +376,7 @@ class TeamView(generics.GenericAPIView):
     def teamInfo(self, team):
         team_info = {
             "teamname": team.teamname,
-            "event": team.event,
+            "event": team.event.event,
             "leader": team.leader.email,
             "member1": team.member1.email if team.member1 else None,
             "member2": team.member2.email if team.member2 else None,
