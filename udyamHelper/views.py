@@ -10,8 +10,6 @@ import pandas as pd
 import shutil
 from django.http import HttpResponse
 from django.http import Http404
-from rest_framework.decorators import api_view, renderer_classes
-
 
 
 class InputSerializer(serializers.Serializer):
@@ -198,10 +196,8 @@ class TeamGetUserView(generics.ListAPIView):
                 {"error": "No such user exists"}, status=status.HTTP_404_NOT_FOUND
             )
 
-
-@api_view(('GET',))
 def export_users_xls(request):
-    if request.user.is_admin is False:
+    if not request.method == "GET" or not request.user.has_perm("view_useracount"):
         raise Http404
     
     response = HttpResponse(content_type="application/ms-excel")
@@ -237,9 +233,8 @@ def export_users_xls(request):
 
 
 
-@api_view(('GET',))
 def export_teams_xls(request):
-    if request.user.is_admin is False:
+    if not request.method == "GET" or not request.user.has_perm("view_useracount"):
         raise Http404
     
     response = HttpResponse(content_type="application/ms-excel")

@@ -40,7 +40,7 @@ def google_validate(*, code: str) -> bool:
         access_token=code
     user_data = google_get_user_info(access_token=access_token)
     user_data={
-        "givenName":user_data["given_name"]+" "+user_data["family_name"],
+        "givenName":user_data["given_name"]+" "+ (user_data["family_name"] if "family_name" in user_data.keys() else ""),
         "email":user_data["email"],
         "code": access_token
     }
