@@ -441,7 +441,6 @@ class TeamView(generics.GenericAPIView):
             }
             # print("HEllo4")
             return Response(team_info, status=status.HTTP_200_OK)
-        
         except Team.DoesNotExist:
             # print("HEllo5")
             return Response(
