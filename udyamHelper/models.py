@@ -27,7 +27,7 @@ class NoticeBoard(models.Model):
 
 
 class Team(models.Model):
-    teamname = models.CharField(max_length=50, unique=True)
+    teamname = models.CharField(max_length=50, unique=False)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     leader = models.ForeignKey(UserAcount, on_delete=models.CASCADE)
     member1 = models.ForeignKey(UserAcount, on_delete=models.CASCADE, null=True, blank=True, related_name='member1')
